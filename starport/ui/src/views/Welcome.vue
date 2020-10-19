@@ -4,7 +4,7 @@
 
     <div class="hero">
       <h2>Your blockchain <br> is ready.</h2>
-      <p>Starport has scaffolded and launched a Cosmos blockchain for you. Your blockchain has its own tokens, accounts, governance, custom data types and more.</p>
+      <p>Starport has scaffolded and launched a Cosmos blockchain for you. Your blockchain has its own tokens, accounts, custom data types and more.</p>
     </div>
 
     <div class="dashboard -grid-col-3">
@@ -12,11 +12,11 @@
       <div class="-center-top -f-cosmos-overline-0">STACK</div>
 
       <div class="-left dashboard__card -log">
-        <IconItem :iconType="'check'"  :itemText="'Depencies installed'" />        
-        <IconItem :iconType="'check'"  :itemText="'Source code scaffolded'" />        
-        <IconItem :iconType="'check'"  :itemText="'Build complete'" />        
-        <IconItem :iconType="'check'"  :itemText="'Blockchain initialized'" />        
-        <IconItem :iconType="'check'"  :itemText="'Accounts created'" />        
+        <IconItem :iconType="'check'" :itemText="'Dependencies installed'" />        
+        <IconItem :iconType="'check'" :itemText="'Source code scaffolded'" />        
+        <IconItem :iconType="'check'" :itemText="'Build complete'" />        
+        <IconItem :iconType="'check'" :itemText="'Blockchain initialized'" />        
+        <IconItem :iconType="'check'" :itemText="'Accounts created'" />        
         <IconItem 
           :iconType="'check'"
           :itemText="'Blockchain node started'"
@@ -43,7 +43,7 @@
             :toInjectSlot="card.id === 'frontend'"
           >
             <p v-if="card.id === 'frontend'" class="item__main">
-              <a class="-with-arrow" :href="getBackendUrl(card.port)" target="_blank">localhost: {{card.port}}</a>
+              <a class="-with-arrow" :href="appEnv.FRONTEND" target="_blank">localhost: {{card.port}}</a>
             </p>
           </IconItem>
         </div>
@@ -51,7 +51,7 @@
           v-if="card.id === 'api'"
           :blockCards="blockCards"
         />
-      </div>      
+      </div>
 
     </div>
 
@@ -62,10 +62,11 @@
       </div>
       <div class="intro__main">
         <p>Your blockchain is built with 
-          <a href="https://github.com/cosmos/cosmos-sdk">Cosmos SDK</a>
-          , a modular framework for building blockchains. It includes modules such as 
-          <span>auth</span>, <span>bank</span>, <span>staking</span>, <span>governance</span>, 
-          and more. Every feature is packaged as a separate module that can interact with other modules. Starport has actually generated a module for you, which you can use to start developing your own application and features.</p>
+          <a href="https://github.com/cosmos/cosmos-sdk" target="_blank">Cosmos SDK</a>
+          , a modular framework for building blockchains. Every feature in the Cosmos SDK is packaged as a separate module that can interact with other modules. We've installed the 
+          <span>auth</span>, <span>bank</span>, and <span>staking</span> modules for you. 
+          We've also generated an empty module, which you can use to start developing your own application features.          
+        </p>
       </div>
     </div>
     
@@ -81,6 +82,7 @@
             :key="card.title"
             :class="['card-wrapper text-card', { '-is-dark': card.tagline === 'tutorial' }]"
             :href="card.link"
+            target="_blank"
           >
             <div class="text-card__top">
               <span class="text-card__tagline">{{card.tagline}}</span>
@@ -93,12 +95,13 @@
         </div>
       </div>
 
-      <div class="tutorials__videos">
+      <div class="tutorials__videos -grid-col-3">
         <a 
           v-for="card in videos"
           :key="card.title"
           class="image-card"
           :href="card.link"
+          target="_blank"
         >
           <img class="image-card__img card-wrapper" :src="card.imgUrl" :alt="card.alt">
           <div class="image-card__text">
@@ -205,6 +208,13 @@ const videos = [
     alt: 'Getting started with Starport, the easiest way to build a Cosmos SDK blockchain',
     link: 'https://www.youtube.com/watch?v=rmbPjCGDXek'
   },
+  {
+    title: 'Tendermint Workshop: A 5 minute Blockchain Using Starport',
+    length: '56:28',
+    imgUrl: '/images/brian-workshop.png',
+    alt: 'Tendermint Workshop: A 5 minute Blockchain Using Starport',
+    link: 'https://www.youtube.com/watch?v=PGLAW-HrzWg&t=10s'
+  },
 ]
 
 const footerBlocks = [
@@ -233,8 +243,8 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('cosmos', [ 'backendRunningStates', 'backendEnv' ]),   
-    ...mapGetters('cosmos/blocks', [ 'latestBlock', 'blockByHeight' ]), 
+    ...mapGetters('cosmos', [ 'backendRunningStates', 'backendEnv', 'appEnv' ]),   
+    ...mapGetters('cosmos/blocks', [ 'latestBlock', 'blockByHeight' ])
   },    
   methods: {
     insertBlockToStack(index, block) {
@@ -246,9 +256,11 @@ export default {
       if (latestBlock) {
         this.insertBlockToStack(0, latestBlock)
 
-        for (let i=1; i<3; i++) {
+        for (let i=1; i<=2; i++) {
           if (parseInt(latestBlock.height)-i>0) {
             this.insertBlockToStack(i, this.blockByHeight(parseInt(latestBlock.height)-i)[0])
+          } else {
+            break
           }
         }
       }      
@@ -261,25 +273,23 @@ export default {
       }
     },
     getFmtBlockTime(time) {
-      if (!time) return '_'
-
-      return moment(time).format('H:mm:ss')
+      return !time ? '_' : moment(time).format('H:mm:ss')
     },
-    getPrefixURL(url, prefix) {
-      const newURL = new URL(url)
-      return `${newURL.protocol}//${prefix}-${newURL.hostname}`
-    },    
-    getBackendUrl(port) {
-      const { vue_app_custom_url } = this.backendEnv
-      return (vue_app_custom_url && this.getPrefixURL(vue_app_custom_url, port)) || `http://localhost:${port}`
-    }    
   },
   watch: {
     latestBlock() {
-      if (this.blockCards.length===0) this.setInitBlockCards()
-      if (this.blockCards.length>2) this.blockCards.splice(0, 1)
+      if (this.blockCards.length===0) {
+        this.setInitBlockCards()
+        return 
+      }
 
+      if (this.blockCards.length>2) this.blockCards.splice(0, 1)
       this.insertBlockToStack(2, this.latestBlock)
+    },
+    backendRunningStates() {
+      if (!this.backendRunningStates.api) {
+        this.blockCards=[]
+      }
     }
   },
   created() {
@@ -590,7 +600,7 @@ a.text-card {
   }
 }
 
-.tutorials__videos {
+/* .tutorials__videos {
   display: flex;
   justify-content: space-between;
 }
@@ -601,21 +611,20 @@ a.text-card {
   .tutorials__videos .image-card {
     width: calc((100% - 1rem) / 2);
   }
-}
+} */
 @media screen and (max-width: 576px) {
   .tutorials__videos {
-    flex-direction: column;
-    margin-bottom: 4rem;
-  }
-  .tutorials__videos .image-card {
-    width: 100%;
-  }  
-  .tutorials__videos .image-card:not(:last-child) {
-    margin-bottom: 1.5rem;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
   }
   .image-card__text {
     margin-left: 2px;
   }
+  .tutorials__videos {
+    margin-bottom: 3rem;
+  }
+  .tutorials__videos .image-card:not(:last-child) {
+    margin-bottom: 1.5rem;
+  }  
 }
 
 

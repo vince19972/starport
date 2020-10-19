@@ -1,6 +1,6 @@
 <template>
   <transition name="fade" mode="out-in" key="default">
-    <div v-if="!isBlocksStackEmpty" class="explorer">
+    <div v-if="!isBlocksStackEmpty && isBackendAlive" class="explorer">
       <FullWidthContainer>
         <div slot="sideSheet" class="explorer__block">
           <transition name="fadeMild" mode="out-in">
@@ -59,7 +59,7 @@ export default {
      * Vuex 
      *
      */
-    ...mapGetters('cosmos', [ 'appEnv' ]),
+    ...mapGetters('cosmos', [ 'appEnv', 'backendRunningStates' ]),
     ...mapGetters('cosmos/blocks', [ 'highlightedBlock', 'blocksStack', 'lastBlock', 'stackChainRange', 'latestBlock' ]),
     /*
      *
@@ -88,6 +88,9 @@ export default {
         !this.fmtBlockData || 
         this.fmtBlockData?.length<=0
     },
+    isBackendAlive() {
+      return this.backendRunningStates.api
+    }
   },  
   methods: {
     /*
@@ -154,12 +157,15 @@ export default {
 <style scoped>
 
 .explorer {
+  --top-offset: 2.25rem;
+}
+.explorer {
   height: calc(100vh - var(--header-height) - 1px - 2.25rem);
   padding-top: 2.25rem;
 }
 @media only screen and (max-width: 992px) {
   .explorer {
-    padding-top: 1.5rem;
+    --top-offset: 1.5rem;
   }
 }
 
@@ -172,17 +178,18 @@ export default {
 .explorer__chain-header {
   font-size: 3.1875rem;
   font-weight: var(--f-w-bold);
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
   padding-left: calc(var(--g-offset-side) - 4px);
 }
 @media only screen and (max-width: 992px) {
   .explorer__chain-header {
-    margin-bottom: 0.5rem;
-  }
+    margin-bottom: 1rem;
+  }  
 }
 
 .explorer__block {
   height: 100%;
+  min-width: 400px;
 }
 
 .explorer.-is-empty {

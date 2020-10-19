@@ -1,6 +1,6 @@
 <template>
   <transition name="fade">
-    <div v-if="blockCards.length>0" class="container" key=default>
+    <div v-if="blockCards.length>0" class="container" key="default">
       <transition-group name="list" tag="ul">
         <div 
           v-for="(block) in blockCards"
@@ -18,7 +18,7 @@
             </div>
           </div>
           <div class="card__btm">
-            <p ref="blockHash" class="card__hash">{{block.hash}}</p>
+            <p class="card__hash">{{block.hash}}</p>
           </div>
           <div class="card__bg">
             <Box/>
@@ -27,7 +27,7 @@
       </transition-group>
     </div>        
 
-    <div v-else class="empty-card" key=empty>
+    <div v-else class="empty-card" key="empty">
       <div class="empty-card__container">
         <Box/>
         <p>Generating blocks</p>
@@ -51,8 +51,7 @@ export default {
       type: Array,
       required: true,
       validator(value) {
-        return value
-          .filter(block => block.height && block.time && block.hash)
+        return value.filter(block => block.height && block.time && block.hash)
           .length===value.length
       }
     }
@@ -63,7 +62,6 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('cosmos/ui', [ 'blocksExplorerTableId' ]),
     ...mapGetters('cosmos/blocks', [ 'blockByHeight' ]),
   },
   methods: {
@@ -84,11 +82,7 @@ export default {
       const fmtBlockData = this.blockFormatter.blockForTable(blockData)[0]
       this.setHighlightedBlock({
         block: { id: hash, data: fmtBlockData }
-      })
-      this.setTableSheetState({
-        tableId: this.blocksExplorerTableId,
-        sheetState: true
-      })      
+      })   
 
       this.$router.push('blocks')
     }
@@ -107,7 +101,7 @@ export default {
 .card__top {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 5rem;
+  margin-bottom: 4.5rem;
 }
 .card__top-left {
   color: var(--c-txt-highlight);

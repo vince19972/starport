@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!block.data" :class="['sheet -is-empty']">Waiting for block data</div>
+  <div v-if="!block.data" :class="['sheet -is-empty']">Fetching block data</div>
 
   <div v-else class="sheet">
     <div class="sheet__header">
@@ -8,9 +8,10 @@
       </div>
       <div class="sheet__header-side">
         <div class="sheet__header-side-top">
-          <CopyIconText 
+          <CopyIconText
+            class="copy-icon-text"
             :text="block.data.blockMsg.blockHash_sliced" 
-            :link="`${appEnv.RPC}/block?hash=${block.data.blockMsg.blockHash}`"
+            :link="`${appEnv.RPC}/block_by_hash?hash=0x${block.data.blockMsg.blockHash}`"
             :copyContent="block.data.blockMsg.blockHash"
             :tooltipText="'BlockHash is copied'"
           />
@@ -45,8 +46,11 @@
               <span class="tx__error-title">Error</span>
               <p class="tx__error-msg">{{ tx.raw_log }}</p>
             </div>
-
-            <TxMsgCards :msgs="tx.tx.value.msg" />
+            
+            <div class="tx__main-cards">
+              <YamlCards :contents="tx.tx.value.msg" :cardType="'Messages'" />
+              <YamlCards :contents="getEvents(tx)" :cardType="'Events'" />
+            </div>
           </div>
           <div class="tx__side">
             <div class="tx__info">
@@ -55,9 +59,10 @@
               <div class="tx__info-container">
                 <div class="tx__info-content tx-info">
                   <span class="tx-info__title">Hash</span>
-                  <CopyIconText 
+                  <CopyIconText
+                    class="copy-icon-text"
                     :text="tx.txhash" 
-                    :link="`${appEnv.RPC}/block?hash=${tx.txhash}`"
+                    :link="`${appEnv.RPC}/tx?hash=0x${tx.txhash}`"
                     :copyContent="tx.txhash"
                     :tooltipText="'TxHash is copied'"
                     :tooltipDirection="'left'"
@@ -94,12 +99,12 @@ import { mapGetters } from 'vuex'
 import { getters } from '@/mixins/helpers'
 
 import CopyIconText from '@/components/texts/CopyIconText'
-import TxMsgCards from '@/modules/TxMsgCards'
+import YamlCards from '@/components/cards/YamlCards'
 
 export default {
   components: {
     CopyIconText,
-    TxMsgCards
+    YamlCards
   },
   props: {
     block: { type: Object }
@@ -116,8 +121,11 @@ export default {
       return momentTime.format('MMM D YYYY, HH:mm:ss')
     },
     getTxFee(tx) {
-      const fee = tx.tx.value.fee.amount
-      return fee ? '0' : `${fee[0].amount} ${fee[0].denom}`
+      const amount = tx.tx.value.fee.amount
+      return amount.length<1 ? '0' : `${amount[0].amount} ${amount[0].denom}`
+    },
+    getEvents(tx) {
+      return tx.logs.flatMap(log => log.events)
     }
   }
 }
@@ -232,6 +240,9 @@ export default {
   flex-grow: 1;
   margin-right: 3rem;
 }
+.tx__main-cards > *:not(:last-child) {
+  margin-bottom: 1.5rem;
+}
 .tx__side {
   width: 15vw;
   max-width: 180px;
@@ -299,6 +310,10 @@ export default {
   .tx-info:first-child {
     max-width: 50%;
   }
+}
+
+.copy-icon-text >>> a {
+  font-family: var(--f-secondary);
 }
 
 </style>
