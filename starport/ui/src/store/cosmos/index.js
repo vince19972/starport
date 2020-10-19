@@ -10,6 +10,8 @@ const {
   VUE_APP_ADDRESS_PREFIX
 } = process.env
 
+console.log(process.env)
+
 export default {
   namespaced: true,
   state: {

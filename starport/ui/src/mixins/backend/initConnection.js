@@ -31,9 +31,10 @@ export default {
     },
     async setStatusState() {
       try {
-        // const { data } = await axios.get(`${this.appEnv.STARPORT_APP}/status`)
-        const { data } = await axios.get(`/status`)
+        const { data } = await axios.get(`${this.appEnv.STARPORT_APP}/status`)
         const { status, env } = data
+
+        console.log(this.appEnv.STARPORT_APP)
 
         this.setAppEnv({
           customUrl: env.vue_app_custom_url 
